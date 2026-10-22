@@ -17,3 +17,7 @@ target_link_libraries(gravification PRIVATE imgui::imgui)
 #OpenGL
 find_package(OpenGL REQUIRED)
 target_link_libraries(gravification PRIVATE OpenGL::GL)
+
+#GLAD
+find_package(glad CONFIG REQUIRED)
+target_link_libraries(gravification PRIVATE glad::glad)

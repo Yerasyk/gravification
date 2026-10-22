@@ -7,6 +7,10 @@
                 "glfw-binding",
                 "opengl3-binding"
             ]
+        },
+        {
+            "name":"glad",
+            "features":["gl-api-33"]
         }
     ]
 }
