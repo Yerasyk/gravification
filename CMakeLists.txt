@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 
 project(Gravification LANGUAGES CXX)
 
-add_executable(gravification main.cpp)
+add_executable(gravification 
+    src/main.cpp 
+    src/shader.cpp)
 
 target_compile_features(gravification PRIVATE cxx_std_20)
 

@@ -74,6 +74,10 @@ void Shader::setInt(const std::string& name, int value){
 
 }
 
+void Shader::destroy(){
+    glDeleteProgram(ID);
+}
+
 
 // utility function for checking shader compilation/linking errors.
 // ------------------------------------------------------------------------

@@ -5,26 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-
-//Shaders Code
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
-const char *fragmentShaderSource2 = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 1.0f, 0.1f, 1.0f);\n"
-    "}\n\0";
+#include "shader.h"
 
 int main()
 {
@@ -33,7 +14,7 @@ int main()
         return 1;
     }
 
-    //Gives Imgui info about OpenGL (version)
+    // Request OpenGL 3.3 core when creating the window.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -110,40 +91,9 @@ int main()
     glGenBuffers(3, EBO);
     glGenVertexArrays(3, VAO);
     
-    //////////////////////////
-    //Create a vertex and fragment shaders objects - OpenGL need compile shader in runtime
-    //              In game graphics calculation
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
-
-    unsigned int fragmentShader2;
-    fragmentShader2 = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader2, 1, &fragmentShaderSource2, nullptr);
-    glCompileShader(fragmentShader2);
-
     //Creating Shader program: shad_out -> link -> shad_inp
-    unsigned int shaderProgram, shader2;
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    shader2 = glCreateProgram();
-    glAttachShader(shader2, vertexShader);
-    glAttachShader(shader2, fragmentShader2);
-    glLinkProgram(shader2);
-
-    //after linking to the program -> we don't need shaders anymore
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    glDeleteShader(fragmentShader2);
+    Shader shader1("./shaders/orig.vert", "./shaders/orig.frag");
+    Shader shader2("./shaders/orig.vert", "./shaders/sec.frag");
 
     //////////////////////////
     //Game Loop
@@ -219,8 +169,8 @@ int main()
         
         //3)use shader and VAO program and draw triangle
         if(!shaders){
-            glUseProgram(shaderProgram);
-        }else glUseProgram(shader2);
+            shader1.use();
+        }else shader2.use();
         
         for(auto el : VAO){
             glBindVertexArray(el);
@@ -231,7 +181,12 @@ int main()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     }
-    
+    glDeleteVertexArrays(3, VAO);
+    glDeleteBuffers(3, VBO);
+    glDeleteBuffers(3, EBO);
+    shader1.destroy();
+    shader2.destroy();
+
     ////////////////////////
     //Shut ImGui
     ImGui_ImplOpenGL3_Shutdown();
