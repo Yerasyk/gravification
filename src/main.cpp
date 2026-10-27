@@ -53,6 +53,7 @@ int main()
     bool shaders = false;
 
     float background[3] = {0.02f, 0.03f, 0.08f};
+    float pulseColor[3] = {1.0f, 1.0f, 1.0f};
 
     //Square
     // float vertices[] = {
@@ -148,6 +149,7 @@ int main()
         ImGui::Begin("Settings");
         ImGui::ColorEdit3("Background", background);
         ImGui::Checkbox("Wireframe", &wireFrame);
+        ImGui::ColorEdit3("Pulse Color", pulseColor);
         ImGui::Checkbox("Shader2", &shaders);
         ImGui::End();
 
@@ -158,7 +160,7 @@ int main()
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         glViewport(0, 0, width,height);
-        
+
         //Wireframe mode
         if(wireFrame){
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -171,6 +173,15 @@ int main()
         if(!shaders){
             shader1.use();
         }else shader2.use();
+
+        //Pulse
+        float time = glfwGetTime();
+        float brightness = ((sin(time)/ 2 +0.5f));
+        shader2.setFloatVector("ourColor", 
+            background[0] + (pulseColor[0]-background[0]) * brightness,
+            background[1] + (pulseColor[1]-background[1]) * brightness,
+            background[2] + (pulseColor[2]-background[2]) * brightness
+        );
         
         for(auto el : VAO){
             glBindVertexArray(el);

@@ -23,7 +23,7 @@ public:
     void setInt(const std::string& name, int value);
     void setBool(const std::string& name, bool value);
     void setFloat(const std::string& name, float value);
-
+    void setFloatVector(const std::string& name, float x, float y, float z);
     //
     void destroy();
 private:

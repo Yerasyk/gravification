@@ -62,16 +62,19 @@ void Shader::use(){
 
 //Setting Uniforms
 void Shader::setBool(const std::string& name, bool value){
-    glGetUniformLocation(ID, name.c_str());
+    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+void Shader::setInt(const std::string& name, int value){
+    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
 void Shader::setFloat(const std::string& name, float value){
-    glGetUniformLocation(ID, name.c_str());
-
+    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
-void Shader::setInt(const std::string& name, int value){
-    glGetUniformLocation(ID, name.c_str());
 
+void Shader::setFloatVector(const std::string& name, float x, float y, float z){
+    glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
 }
 
 void Shader::destroy(){
