@@ -3,8 +3,10 @@
 out vec4 FragColor;
 
 uniform vec3 ourColor;
+uniform vec3 bg;
+uniform float bright;
 
 void main()
 {
-    FragColor = vec4(ourColor, 1.0f);
+    FragColor = vec4(mix(bg, ourColor, bright),1.0f);
 }

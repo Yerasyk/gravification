@@ -176,14 +176,14 @@ int main()
 
         //Pulse
         float time = glfwGetTime();
-        float brightness = ((sin(time)/ 2 +0.5f));
-        shader2.setFloatVector("ourColor", 
-            background[0] + (pulseColor[0]-background[0]) * brightness,
-            background[1] + (pulseColor[1]-background[1]) * brightness,
-            background[2] + (pulseColor[2]-background[2]) * brightness
-        );
+        float offset = 0.0f;
+        shader2.setFloatVector("bg",background[0],background[1],background[2]);
+        shader2.setFloatVector("ourColor",pulseColor[0],pulseColor[1],pulseColor[2]);
         
         for(auto el : VAO){
+            offset = (offset+0.5f);
+            float brightness = ((sin(time + offset)/ 2 +0.5f));
+            shader2.setFloat("bright", brightness);
             glBindVertexArray(el);
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         }
