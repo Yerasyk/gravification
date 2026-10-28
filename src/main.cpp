@@ -7,11 +7,10 @@
 #include <imgui_impl_opengl3.h>
 #include "shader.h"
 
-int main()
-{
+GLFWwindow* initializeWindow(int width, int height, const char* title){
     //Initialize glfw
     if(!glfwInit()){
-        return 1;
+        return nullptr;
     }
 
     // Request OpenGL 3.3 core when creating the window.
@@ -20,10 +19,10 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     //Create window and return pointer to that window
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Gravification", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if (window == nullptr){
         glfwTerminate();
-        return 1;
+        return nullptr;
     }
 
     //Set current CONTEXT to window
@@ -33,9 +32,13 @@ int main()
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
         glfwDestroyWindow(window);
         glfwTerminate();
-        return 1;
+        return nullptr;
     }
 
+    return window;
+}
+
+void initializeImGui(GLFWwindow* window){
     //Init ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -43,18 +46,35 @@ int main()
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+}
+struct Settings
+{
+    bool wireFrame = false;
+    float background[3] = {0.02f, 0.03f, 0.08f};
+    bool usePulseShader = false;
+    float pulseColor[3] = {1.0f, 1.0f, 1.0f};
+} settings;
+
+constexpr float PI = 3.14159265358979f;
+
+int main()
+{
+    //Initialize window
+    GLFWwindow* window = initializeWindow(800, 600, "Gravification");
+
+    if (window == nullptr) {
+        return 1;
+    }
+
+    //Init ImGui
+    initializeImGui(window);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //ALL IN GAME STUFF
 
     //////////////////////////
     //Data
-    bool wireFrame = false;
-    bool shaders = false;
-
-    float background[3] = {0.02f, 0.03f, 0.08f};
-    float pulseColor[3] = {1.0f, 1.0f, 1.0f};
-
+    
     //Square
     // float vertices[] = {
     //  0.5f,  0.5f, 0.0f,  // top right
@@ -72,70 +92,45 @@ int main()
     -0.5f, -0.5f, 0.0f,  // bottom left
     0.0f,  -0.5f, 0.0f   // bottom middle 
     };
-    // unsigned int indices[] = {  // note that we start from 0!
-    //     0, 1, 2,   // first triangle
-    //     1, 3, 5,    // second triangle
-    //     2, 5, 4    // second triangle
-    // }; 
-    unsigned int indices1[] = {  // note that we start from 0!
-        0, 1, 2   // first triangle
-    }; unsigned int indices2[] = {  // note that we start from 0!
-        1, 3, 5    // second triangle
-    }; unsigned int indices3[] = {  // note that we start from 0!
+    unsigned int indices[] = {  // note that we start from 0!
+        0, 1, 2,   // first triangle
+        1, 3, 5,    // second triangle
         2, 5, 4    // second triangle
     }; 
+    // unsigned int indices1[] = {  // note that we start from 0!
+    //     0, 1, 2   // first triangle
+    // }; unsigned int indices2[] = {  // note that we start from 0!
+    //     1, 3, 5    // second triangle
+    // }; unsigned int indices3[] = {  // note that we start from 0!
+    //     2, 5, 4    // second triangle
+    // }; 
         
     //////////////////////////
     //Creating Vertex Buffer Object (copy data), Vertex Array Object (store attribute pointers), Element Buffer Object (store indices of vertices)
-    unsigned int VBO[3], VAO[3], EBO[3];
-    glGenBuffers(3, VBO);
-    glGenBuffers(3, EBO);
-    glGenVertexArrays(3, VAO);
+    unsigned int VBO, VAO, EBO;
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &VAO);
     
     //Creating Shader program: shad_out -> link -> shad_inp
     Shader shader1("./shaders/orig.vert", "./shaders/orig.frag");
-    Shader shader2("./shaders/orig.vert", "./shaders/sec.frag");
+    Shader shaderPulse("./shaders/orig.vert", "./shaders/sec.frag");
 
     //////////////////////////
     //Game Loop
     
     //[
         //0)bind VAO
-        glBindVertexArray(VAO[0]);
+        glBindVertexArray(VAO);
         //1)copy verticies and indixes into GPU
-        glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices1), indices1, GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
         //2)set vertex attribure pointers
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
     //]
-    //[
-        //0)bind VAO
-        glBindVertexArray(VAO[1]);
-        //1)copy verticies and indixes into GPU
-        glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices2), indices2, GL_STATIC_DRAW);
-        //2)set vertex attribure pointers
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-    //]
-    //[
-        //0)bind VAO
-        glBindVertexArray(VAO[2]);
-        //1)copy verticies and indixes into GPU
-        glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[2]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices3), indices3, GL_STATIC_DRAW);
-        //2)set vertex attribure pointers
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-    //]
-    //[...]
 
     while(!glfwWindowShouldClose(window)){
         glfwPollEvents();
@@ -147,10 +142,10 @@ int main()
 
         //Describe the interface for this frame
         ImGui::Begin("Settings");
-        ImGui::ColorEdit3("Background", background);
-        ImGui::Checkbox("Wireframe", &wireFrame);
-        ImGui::ColorEdit3("Pulse Color", pulseColor);
-        ImGui::Checkbox("Shader2", &shaders);
+        ImGui::ColorEdit3("Background", settings.background);
+        ImGui::Checkbox("Wireframe", &settings.wireFrame);
+        ImGui::ColorEdit3("Pulse Color", settings.pulseColor);
+        ImGui::Checkbox("Use Pulse Shader", &settings.usePulseShader);
         ImGui::End();
 
         //Prepare interface drawing a function
@@ -162,41 +157,42 @@ int main()
         glViewport(0, 0, width,height);
 
         //Wireframe mode
-        if(wireFrame){
+        if(settings.wireFrame){
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
-        glClearColor(background[0], background[1], background[2], 1.0f);
+        glClearColor(settings.background[0], settings.background[1], settings.background[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
         //3)use shader and VAO program and draw triangle
-        if(!shaders){
+        if(!settings.usePulseShader){
             shader1.use();
-        }else shader2.use();
+        }else shaderPulse.use();
 
         //Pulse
         float time = glfwGetTime();
         float offset = 0.0f;
-        shader2.setFloatVector("bg",background[0],background[1],background[2]);
-        shader2.setFloatVector("ourColor",pulseColor[0],pulseColor[1],pulseColor[2]);
-        
-        for(auto el : VAO){
-            offset = (offset+0.5f);
-            float brightness = ((sin(time + offset)/ 2 +0.5f));
-            shader2.setFloat("bright", brightness);
-            glBindVertexArray(el);
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        float frequency = 4.0f;
+        float phase = 0.0f;
+        shaderPulse.setFloatVector("bg", settings.background, 1);
+        shaderPulse.setFloatVector("ourColor", settings.pulseColor, 1);
+        for(int i = 0; i < 3; i++){
+            phase = (i*2*PI)/3;
+            float brightness = ((sin(frequency*time - phase)/ 2 +0.5f));
+            shaderPulse.setFloat("bright", brightness);
+            glBindVertexArray(VAO);
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)(i*3*sizeof(unsigned int)));
         }
 
         // Draw the interface over the background, then present.
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     }
-    glDeleteVertexArrays(3, VAO);
-    glDeleteBuffers(3, VBO);
-    glDeleteBuffers(3, EBO);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     shader1.destroy();
-    shader2.destroy();
+    shaderPulse.destroy();
 
     ////////////////////////
     //Shut ImGui

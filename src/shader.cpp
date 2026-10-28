@@ -77,6 +77,10 @@ void Shader::setFloatVector(const std::string& name, float x, float y, float z){
     glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
 }
 
+void Shader::setFloatVector(const std::string& name, const float* values, int count){
+    glUniform3fv(glGetUniformLocation(ID, name.c_str()), count, values);
+}
+
 void Shader::destroy(){
     glDeleteProgram(ID);
 }

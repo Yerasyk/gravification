@@ -23,3 +23,11 @@ target_link_libraries(gravification PRIVATE OpenGL::GL)
 #GLAD
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(gravification PRIVATE glad::glad)
+
+#GLM
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(gravification PRIVATE glm::glm)
+
+#STB
+find_package(stb CONFIG REQUIRED)
+target_link_libraries(gravification PRIVATE stb::stb)
